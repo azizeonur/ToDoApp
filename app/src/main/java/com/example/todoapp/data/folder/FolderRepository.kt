@@ -19,5 +19,7 @@ interface FolderRepository {
 
     suspend fun deleteFolder(folder: FolderEntity)
 
-    fun getFolderWithNotes(folderId: Int): Flow<FolderWithNotes>
+    fun getFoldersWithNotesByEntityId(
+        entityId: Int
+    ): Flow<List<FolderWithNotes>>
 }

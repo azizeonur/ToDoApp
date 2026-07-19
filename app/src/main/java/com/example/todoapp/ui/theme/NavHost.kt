@@ -45,6 +45,9 @@ fun ToDoAppNavHost(modifier: Modifier = Modifier) {
             FolderList(
                 onFolderClick = { folderId ->
                     navController.navigate("${Router.LIST}/$folderId")
+                },
+                onAddNoteClick = { folderId ->
+                    navController.navigate("${Router.LIST}/$folderId")
                 }
             )
 

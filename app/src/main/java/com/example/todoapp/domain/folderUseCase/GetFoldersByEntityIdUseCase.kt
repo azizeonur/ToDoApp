@@ -7,6 +7,5 @@ class GetFoldersByEntityIdUseCase @Inject constructor(
     private val repository: FolderRepository
 ) {
     operator fun invoke(entityId: Int) =
-        repository.getFoldersByEntityId(entityId)
-
+        repository.getFoldersWithNotesByEntityId(entityId)
 }

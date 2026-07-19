@@ -4,11 +4,20 @@ import com.example.todoapp.data.database.FolderWithNotes
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
-class FolderRepositoryImpl @Inject constructor(private val folderDao: FolderDao) :
-    FolderRepository {
+class FolderRepositoryImpl @Inject constructor(
+    private val folderDao: FolderDao
+) : FolderRepository {
 
-    override fun getFoldersByEntityId(entityId: Int): Flow<List<FolderEntity>> {
+    override fun getFoldersByEntityId(
+        entityId: Int
+    ): Flow<List<FolderEntity>> {
         return folderDao.getFoldersByEntityId(entityId)
+    }
+
+    override fun getFoldersWithNotesByEntityId(
+        entityId: Int
+    ): Flow<List<FolderWithNotes>> {
+        return folderDao.getFoldersWithNotesByEntityId(entityId)
     }
 
     override suspend fun insertFolder(
@@ -26,14 +35,10 @@ class FolderRepositoryImpl @Inject constructor(private val folderDao: FolderDao)
     }
 
     override suspend fun updateFolder(folder: FolderEntity) {
-        return folderDao.updateFolder(folder)
+        folderDao.updateFolder(folder)
     }
 
     override suspend fun deleteFolder(folder: FolderEntity) {
-        return folderDao.deleteFolder(folder)
-    }
-
-    override fun getFolderWithNotes(folderId: Int): Flow<FolderWithNotes> {
-        return folderDao.getFolderWithNotes(folderId = folderId)
+        folderDao.deleteFolder(folder)
     }
 }

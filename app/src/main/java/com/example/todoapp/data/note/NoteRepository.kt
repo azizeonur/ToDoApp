@@ -4,14 +4,14 @@ import kotlinx.coroutines.flow.Flow
 
 interface NoteRepository {
 
-    fun getNotesByFolderId(
-        folderId: Int
-    ): Flow<List<NoteEntity>>
+    suspend fun getNoteByFolderId(folderId: Int): NoteEntity?
 
     suspend fun insertNote(
         folderId: Int,
         title: String,
-        content: String
+        content: String,
+        selectedDate: String?,
+        selectedTime: String?
     ): Long
 
     suspend fun updateNote(
@@ -21,4 +21,7 @@ interface NoteRepository {
     suspend fun deleteNote(
         note: NoteEntity
     )
+    suspend fun getNoteById(
+        noteId: Int
+    ): NoteEntity?
 }

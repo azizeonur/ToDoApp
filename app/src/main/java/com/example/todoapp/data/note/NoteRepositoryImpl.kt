@@ -6,20 +6,26 @@ import javax.inject.Inject
 class NoteRepositoryImpl @Inject constructor(private val noteDao: NoteDao) : NoteRepository {
 
 
-    override fun getNotesByFolderId(folderId: Int): Flow<List<NoteEntity>> {
-        return noteDao.getNotesByFolderId(folderId)
+
+    override suspend fun getNoteByFolderId(folderId: Int): NoteEntity? {
+        return noteDao.getNoteByFolderId(folderId)
     }
 
     override suspend fun insertNote(
         folderId: Int,
         title: String,
-        content: String
+        content: String,
+        selectedDate: String?,
+        selectedTime: String?
     ): Long {
         return noteDao.insertNote(
             NoteEntity(
                 folderId = folderId,
                 title = title,
-                content = content
+                content = content,
+                selectedDate = selectedDate,
+                selectedTime = selectedTime
+
             )
         )
     }
@@ -30,6 +36,10 @@ class NoteRepositoryImpl @Inject constructor(private val noteDao: NoteDao) : Not
 
     override suspend fun deleteNote(note: NoteEntity) {
         return noteDao.deleteNote(note)
+    }
+
+    override suspend fun getNoteById(noteId: Int): NoteEntity? {
+        return noteDao.getNoteById(noteId)
     }
 
 }

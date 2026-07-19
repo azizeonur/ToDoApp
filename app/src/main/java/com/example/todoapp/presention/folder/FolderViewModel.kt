@@ -10,6 +10,7 @@ import com.example.todoapp.domain.folderUseCase.GetFoldersByEntityIdUseCase
 import com.example.todoapp.domain.folderUseCase.InsertFolderUseCase
 import com.example.todoapp.domain.folderUseCase.UpdateFolderUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import com.example.todoapp.data.database.FolderWithNotes
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -19,16 +20,16 @@ import javax.inject.Inject
 @HiltViewModel
 class FolderViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val getFoldersByEntityIdUseCase: GetFoldersByEntityIdUseCase,
     private val insertFolderUseCase: InsertFolderUseCase,
     private val updateFolderUseCase: UpdateFolderUseCase,
-    private val deleteFolderUseCase: DeleteFolderUseCase
+    private val deleteFolderUseCase: DeleteFolderUseCase,
+    getFoldersByEntityIdUseCase: GetFoldersByEntityIdUseCase
 ) : ViewModel() {
 
     private val entityId: Int =
         checkNotNull(savedStateHandle["entityId"])
 
-    val folders: StateFlow<List<FolderEntity>> =
+    val folders: StateFlow<List<FolderWithNotes>> =
         getFoldersByEntityIdUseCase(entityId)
             .stateIn(
                 scope = viewModelScope,
@@ -38,14 +39,18 @@ class FolderViewModel @Inject constructor(
 
     fun insertFolder(
         title: String,
-        description: String
+        description: String,
+        onInserted: (Int) -> Unit
     ) {
         viewModelScope.launch {
-            insertFolderUseCase(
+
+            val folderId = insertFolderUseCase(
                 entityId = entityId,
                 title = title,
                 description = description
             )
+
+            onInserted(folderId.toInt())
         }
     }
 

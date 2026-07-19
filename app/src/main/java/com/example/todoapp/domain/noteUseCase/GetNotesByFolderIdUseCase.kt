@@ -5,6 +5,6 @@ import javax.inject.Inject
 
 class GetNotesByFolderIdUseCase @Inject constructor(private val repository: NoteRepository
 ) {
-    operator fun invoke(folderId: Int) =
-        repository.getNotesByFolderId(folderId)
+    suspend operator fun invoke(folderId: Int) =
+        repository.getNoteByFolderId(folderId)
 }

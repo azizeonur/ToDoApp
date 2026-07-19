@@ -19,8 +19,12 @@ interface FolderDao {
     fun getFoldersByEntityId(entityId: Int): Flow<List<FolderEntity>>
 
     @Transaction
-    @Query("SELECT * FROM folders WHERE id = :folderId")
-    fun getFolderWithNotes(folderId: Int): Flow<FolderWithNotes>
+    @Query(
+        "SELECT * FROM folders WHERE entityId = :entityId ORDER BY createdAt DESC"
+    )
+    fun getFoldersWithNotesByEntityId(
+        entityId: Int
+    ): Flow<List<FolderWithNotes>>
 
     @Insert(onConflict = OnConflictStrategy.Companion.REPLACE)
     suspend fun insertFolder(folder: FolderEntity): Long
