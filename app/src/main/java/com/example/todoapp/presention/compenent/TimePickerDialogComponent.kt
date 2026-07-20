@@ -7,6 +7,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.example.todoapp.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,7 +38,7 @@ fun TimePickerDialogComponent(
 
                     }
                 ) {
-                    Text("Tamam")
+                    Text(stringResource(R.string.OK))
                 }
 
             },
@@ -45,7 +47,7 @@ fun TimePickerDialogComponent(
                 TextButton(
                     onClick = onDismiss
                 ) {
-                    Text("İptal")
+                    Text(stringResource(R.string.cancel))
                 }
 
             },

@@ -15,7 +15,7 @@ import com.example.todoapp.data.note.NoteEntity
 
 @Database(
     entities = [FolderEntity::class, NoteEntity::class, AlarmEntity::class, EntityEntity::class],
-    version = 6,
+    version = 7,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

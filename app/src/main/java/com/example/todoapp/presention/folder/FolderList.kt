@@ -16,7 +16,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.todoapp.R
+import com.example.todoapp.presention.compenent.DeleteDialogComponent
 
 
 @Composable
@@ -27,6 +30,7 @@ fun FolderList(
 ) {
 
     val folders by viewModel.folders.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
 
     Box(
         modifier = Modifier
@@ -49,6 +53,12 @@ fun FolderList(
                     onClick = {
                         onFolderClick(folder.folder.id)
                     },
+                    onLongClick = {
+                        viewModel.showDeleteDialog(folder.folder)
+                    },
+                    onDeleteClick = {
+                        viewModel.showDeleteDialog(folder.folder)
+                    },
                     selectedDate = lastNote?.selectedDate,
                     selectedTime = lastNote?.selectedTime,
                 )
@@ -69,7 +79,20 @@ fun FolderList(
                 }
             }
         ) {
-            Text("Not Ekle")
+            Text(stringResource(R.string.add_note))
         }
     }
+    DeleteDialogComponent(
+        show = uiState.showDeleteDialog,
+        title = stringResource(R.string.delete_folder_title),
+        message = stringResource(R.string.delete_folder_message),
+        onDismiss = {
+            viewModel.showDeleteDialog(null)
+        },
+        onConfirm = {
+            uiState.folderToDelete?.let {
+                viewModel.deleteFolder(it)
+            }
+        }
+    )
 }

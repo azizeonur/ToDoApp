@@ -15,8 +15,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.todoapp.R
 import com.example.todoapp.presention.compenent.DatePickerDialogComponent
 import com.example.todoapp.presention.compenent.SelectField
 import com.example.todoapp.presention.compenent.TimePickerDialogComponent
@@ -67,7 +69,7 @@ fun ListScreen(
             value = uiState.title,
             onValueChange = viewModel::onTitleChange,
             label = {
-                Text("Başlık")
+                Text(stringResource(R.string.title))
             }
         )
 
@@ -79,16 +81,16 @@ fun ListScreen(
             onValueChange = viewModel::onContentChange,
             minLines = 10,
             label = {
-                Text("İçerik")
+                Text(stringResource(R.string.content))
             }
         )
 
         Spacer(modifier = Modifier.height(12.dp))
 
         SelectField(
-            title = "TARİH",
+            title = stringResource(R.string.date),
             value = displayDate,
-            placeholder = "Tarih Seçiniz...",
+            placeholder = stringResource(R.string.select_date),
             onClick = {
                 viewModel.showDatePicker(true)
             }
@@ -97,9 +99,9 @@ fun ListScreen(
         Spacer(modifier = Modifier.height(12.dp))
 
         SelectField(
-            title = "SAAT",
+            title = stringResource(R.string.time),
             value = displayTime,
-            placeholder = "Saat Seçiniz...",
+            placeholder = stringResource(R.string.select_time),
             onClick = {
                 viewModel.showTimePicker(true)
             }
@@ -108,9 +110,9 @@ fun ListScreen(
         Spacer(modifier = Modifier.height(12.dp))
 
         SelectField(
-            title = "ŞARKI",
+            title = stringResource(R.string.song),
             value = uiState.selectedSongUri?.substringAfterLast("/") ?: "",
-            placeholder = "Şarkı Seçiniz...",
+            placeholder = stringResource(R.string.select_song),
             onClick = {
                 launcher.launch("audio/*")
             }
@@ -124,7 +126,7 @@ fun ListScreen(
                 viewModel.saveNote(onBack)
             }
         ) {
-            Text("Kaydet")
+            Text(stringResource(R.string.SAVE))
         }
 
         DatePickerDialogComponent(

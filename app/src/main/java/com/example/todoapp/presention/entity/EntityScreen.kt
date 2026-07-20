@@ -17,15 +17,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.todoapp.R
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.todoapp.presention.compenent.DeleteDialogComponent
 
 @Composable
 fun EntityList(
     onEntityClick: (Int) -> Unit,
-    onAddClick: () -> Unit = {},
     viewModel: EntityViewModel = hiltViewModel()
 ) {
     val entities by viewModel.entities.collectAsState()
@@ -58,9 +60,18 @@ fun EntityList(
 
                     EntityCard(
                         title = entity.title,
-                        subTitle = "",
-                        modifier = Modifier.clickable {
+                        subTitle = entity.description,
+                        onClick = {
                             onEntityClick(entity.id)
+                        },
+                        onLongClick = {
+                            viewModel.showDeleteDialog(entity)
+                        },
+                        onDeleteClick = {
+                            viewModel.showDeleteDialog(entity)
+                        },
+                        onEditClick = {
+                            viewModel.showEditDialog(entity)
                         }
                     )
                 }
@@ -77,39 +88,61 @@ fun EntityList(
                     shape = CircleShape
                 )
                 .clickable {
-                   viewModel.showDialog(true)
+                    viewModel.showDialog(true)
                 },
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Default.Add,
-                contentDescription = "Add",
+                contentDescription = "",
                 tint = Color(0xFF7E57C2),
                 modifier = Modifier.size(28.dp)
             )
         }
     }
+    DeleteDialogComponent(
+        show = uiState.showDeleteDialog,
+        title = stringResource(R.string.delete_folder_title),
+        message = stringResource(R.string.delete_folder_message),
+        onDismiss = {
+            viewModel.showDeleteDialog(null)
+        },
+        onConfirm = {
+            uiState.entityToDelete?.let {
+                viewModel.deleteEntity(it)
+            }
+        }
+    )
     if (uiState.showDialog) {
-
         EntityDialog(
             uiState = uiState,
             onTitleChange = viewModel::onTitleChange,
+            onDescriptionChange = viewModel::onDescriptionChange,
             onDismiss = {
-                viewModel.showDialog(false)
-                viewModel.onTitleChange("")
+                viewModel.dismissDialog()
             },
             onSave = {
+                val editingEntity = uiState.editingEntity
 
-                if (uiState.title.isNotBlank()) {
+                if (editingEntity == null) {
 
-                    viewModel.insertEntity(uiState.title.trim())
+                    viewModel.insertEntity(
+                        title = uiState.title.trim(),
+                        description = uiState.description.trim()
+                    )
 
-                    viewModel.onTitleChange("")
-                    viewModel.showDialog(false)
+                } else {
+
+                    viewModel.updateEntity(
+                        editingEntity.copy(
+                            title = uiState.title.trim(),
+                            description = uiState.description.trim()
+                        )
+                    )
                 }
+
+                viewModel.dismissDialog()
             }
         )
-
     }
 }
-

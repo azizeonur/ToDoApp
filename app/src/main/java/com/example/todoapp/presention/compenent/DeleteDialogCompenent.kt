@@ -1,51 +1,51 @@
 package com.example.todoapp.presention.compenent
 
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.example.todoapp.R
 
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DatePickerDialogComponent(
+fun DeleteDialogComponent(
     show: Boolean,
+    title: String,
+    message: String,
     onDismiss: () -> Unit,
-    onDateSelected: (Long?) -> Unit
+    onConfirm: () -> Unit
 ) {
-
-    val datePickerState = rememberDatePickerState()
 
     if (show) {
 
-        DatePickerDialog(
+        AlertDialog(
             onDismissRequest = onDismiss,
+
+            title = {
+                Text(title)
+            },
+
+            text = {
+                Text(message)
+            },
+
             confirmButton = {
                 TextButton(
                     onClick = {
-                        onDateSelected(datePickerState.selectedDateMillis)
+                        onConfirm()
                         onDismiss()
                     }
                 ) {
-                    Text(stringResource(R.string.OK))
+                    Text(stringResource(R.string.evet))
                 }
             },
+
             dismissButton = {
                 TextButton(
                     onClick = onDismiss
                 ) {
-                    Text("İptal")
-                }
+                    Text(stringResource(R.string.hayır))                }
             }
-        ) {
-            DatePicker(
-                state = datePickerState
-            )
-        }
+        )
     }
 }

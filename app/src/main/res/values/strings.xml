@@ -1,3 +1,24 @@
 <resources>
     <string name="app_name">ToDoApp</string>
+    <string name="delete_folder_title">Klasörü Sil</string>
+    <string name="delete_folder_message">Bu klasörü silmek istediğinize emin misiniz?</string>
+    <string name="add_note">Not Ekle</string>
+    <string name="delete">Sil</string>
+    <string name="OK">Tamam</string>
+    <string name="evet">EVET</string>
+    <string name="hayır">HAYIR</string>
+    <string name="cancel">İptal</string>"
+    <string name="new_category">Kategori Oluştur</string>
+    <string name="category_name">Kategori Adı</string>
+    <string name="category_description">Kategori Açıklaması</string>
+    <string name="SAVE">KAYDET</string>
+    <string name="title">BAŞLIK</string>
+    <string name="content">İçerik</string>
+    <string name="description">Açıklama</string>
+    <string name="date">TARİH</string>
+    <string name="time">SAAT</string>
+    <string name="select_date">Tarih Seçiniz...</string>
+    <string name="select_time">Saat Seçiniz...</string>
+    <string name="select_song">Şarkı Seçiniz...</string>
+    <string name="song">ŞARKI</string>
 </resources>

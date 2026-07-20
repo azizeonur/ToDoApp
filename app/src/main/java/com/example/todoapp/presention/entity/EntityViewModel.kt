@@ -31,33 +31,50 @@ class EntityViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(title = title)
     }
 
+    fun onDescriptionChange(description: String) {
+        _uiState.value = _uiState.value.copy(description = description)
+    }
+
     fun showDialog(show: Boolean) {
         _uiState.value = _uiState.value.copy(showDialog = show)
     }
 
-    fun saveEntity() {
-        val title = uiState.value.title.trim()
-
-        if (title.isBlank()) return
-
-        viewModelScope.launch {
-            insertEntity(title)
-
-            _uiState.value = EntityUiState()
-        }
+    fun showDeleteDialog(entity: EntityEntity?) {
+        _uiState.value = _uiState.value.copy(
+            showDeleteDialog = entity != null,
+            entityToDelete = entity
+        )
     }
 
     val entities: StateFlow<List<EntityEntity>> =
         getAllEntitiesUseCase()
             .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.Companion.WhileSubscribed(5000),
-                initialValue = emptyList()
+                viewModelScope,
+                SharingStarted.WhileSubscribed(5000),
+                emptyList()
             )
 
-    fun insertEntity(title: String) {
+    fun dismissDialog() {
+        _uiState.value = _uiState.value.copy(
+            showDialog = false,
+            editingEntity = null,
+            title = "",
+            description = ""
+        )
+    }
+
+    fun showEditDialog(entity: EntityEntity) {
+        _uiState.value = _uiState.value.copy(
+            showDialog = true,
+            editingEntity = entity,
+            title = entity.title,
+            description = entity.description
+        )
+    }
+
+    fun insertEntity(title: String, description: String) {
         viewModelScope.launch {
-            insertEntityUseCase(title)
+            insertEntityUseCase(title, description)
         }
     }
 

@@ -6,7 +6,7 @@ interface EntityRepository {
 
     fun getAllEntities(): Flow<List<EntityEntity>>
 
-    suspend fun insertEntity(title: String): Long
+    suspend fun insertEntity(title: String, description: String): Long
 
     suspend fun updateEntity(entity: EntityEntity)
 

@@ -11,8 +11,10 @@ import com.example.todoapp.domain.folderUseCase.InsertFolderUseCase
 import com.example.todoapp.domain.folderUseCase.UpdateFolderUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import com.example.todoapp.data.database.FolderWithNotes
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -23,8 +25,11 @@ class FolderViewModel @Inject constructor(
     private val insertFolderUseCase: InsertFolderUseCase,
     private val updateFolderUseCase: UpdateFolderUseCase,
     private val deleteFolderUseCase: DeleteFolderUseCase,
-    getFoldersByEntityIdUseCase: GetFoldersByEntityIdUseCase
+    private val getFoldersByEntityIdUseCase: GetFoldersByEntityIdUseCase
 ) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(FolderUiState())
+    val uiState: StateFlow<FolderUiState> = _uiState.asStateFlow()
 
     private val entityId: Int =
         checkNotNull(savedStateHandle["entityId"])
@@ -52,6 +57,12 @@ class FolderViewModel @Inject constructor(
 
             onInserted(folderId.toInt())
         }
+    }
+    fun showDeleteDialog(folder: FolderEntity?) {
+        _uiState.value = _uiState.value.copy(
+            showDeleteDialog = folder != null,
+            folderToDelete = folder
+        )
     }
 
     fun updateFolder(folder: FolderEntity) {

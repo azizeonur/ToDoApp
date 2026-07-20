@@ -7,7 +7,7 @@ class InsertEntityUseCase @Inject constructor(
     private val repository: EntityRepository
 ) {
 
-    suspend operator fun invoke(title: String): Long {
-        return repository.insertEntity(title)
+    suspend operator fun invoke(title: String, description: String): Long {
+        return repository.insertEntity(title, description)
     }
 }
