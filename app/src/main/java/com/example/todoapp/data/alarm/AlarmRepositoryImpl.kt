@@ -14,6 +14,7 @@ class AlarmRepositoryImpl @Inject constructor(private val alarmDao: AlarmDao) :
         return alarmDao.getActiveAlarms()
     }
 
+
     override suspend fun insertAlarm(
         noteId: Int,
         triggerTimeMillis: Long,
@@ -26,6 +27,10 @@ class AlarmRepositoryImpl @Inject constructor(private val alarmDao: AlarmDao) :
                 label = label
             )
         )
+    }
+
+    override suspend fun getAlarmByNoteId(noteId: Int): AlarmEntity? {
+        return alarmDao.getAlarmByNoteId(noteId)
     }
 
     override suspend fun updateAlarm(alarm: AlarmEntity) {

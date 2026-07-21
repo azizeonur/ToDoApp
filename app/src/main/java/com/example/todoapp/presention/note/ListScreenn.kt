@@ -51,6 +51,7 @@ fun ListScreen(
     val displayTime =
         if (uiState.selectedHour != null && uiState.selectedMinute != null) {
             String.format(
+                Locale.getDefault(),
                 "%02d:%02d",
                 uiState.selectedHour,
                 uiState.selectedMinute

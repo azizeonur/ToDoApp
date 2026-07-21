@@ -68,7 +68,7 @@ fun FolderList(
         }
         FloatingActionButton(
             modifier = Modifier
-                .padding(12.dp)
+                .padding(24.dp)
                 .align(Alignment.BottomEnd),
             onClick = {
                 viewModel.insertFolder(

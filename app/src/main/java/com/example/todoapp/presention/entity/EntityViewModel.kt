@@ -71,16 +71,29 @@ class EntityViewModel @Inject constructor(
             description = entity.description
         )
     }
-
     fun insertEntity(title: String, description: String) {
+
+        if (title.isBlank()) return
+
         viewModelScope.launch {
-            insertEntityUseCase(title, description)
+            insertEntityUseCase(
+                title.trim(),
+                description.trim()
+            )
         }
     }
 
     fun updateEntity(entity: EntityEntity) {
+
+        if (entity.title.isBlank()) return
+
         viewModelScope.launch {
-            updateEntityUseCase(entity)
+            updateEntityUseCase(
+                entity.copy(
+                    title = entity.title.trim(),
+                    description = entity.description.trim()
+                )
+            )
         }
     }
 

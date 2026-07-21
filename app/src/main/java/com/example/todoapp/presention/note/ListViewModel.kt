@@ -1,10 +1,14 @@
 package com.example.todoapp.presention.note
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.todoapp.data.note.NoteEntity
+import com.example.todoapp.domain.alarmUseCase.AlarmScheduler
+import com.example.todoapp.domain.alarmUseCase.GetAlarmByNoteIdUseCase
 import com.example.todoapp.domain.alarmUseCase.InsertAlarmUseCase
+import com.example.todoapp.domain.alarmUseCase.UpdateAlarmUseCase
 import com.example.todoapp.domain.noteUseCase.DeleteNoteUseCase
 import com.example.todoapp.domain.noteUseCase.GetNotesByFolderIdUseCase
 import com.example.todoapp.domain.noteUseCase.InsertNoteUseCase
@@ -17,6 +21,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+import java.util.Calendar
 
 
 @HiltViewModel
@@ -24,8 +29,11 @@ class ListViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val insertNoteUseCase: InsertNoteUseCase,
     private val updateNoteUseCase: UpdateNoteUseCase,
+    private val updateAlarmUseCase: UpdateAlarmUseCase,
     private val deleteNoteUseCase: DeleteNoteUseCase,
     private val insertAlarmUseCase: InsertAlarmUseCase,
+    private val alarmScheduler: AlarmScheduler,
+    private val getAlarmByNoteIdUseCase: GetAlarmByNoteIdUseCase,
     private val getNotesByFolderIdUseCase: GetNotesByFolderIdUseCase
 ) : ViewModel() {
 
@@ -96,10 +104,16 @@ class ListViewModel @Inject constructor(
     }
 
     fun setTime(hour: Int, minute: Int) {
+        Log.d("AlarmTest", "setTime Hour = $hour")
+        Log.d("AlarmTest", "setTime Minute = $minute")
+
         _uiState.value = _uiState.value.copy(
             selectedHour = hour,
             selectedMinute = minute
         )
+
+        Log.d("AlarmTest", "UiState Hour = ${_uiState.value.selectedHour}")
+        Log.d("AlarmTest", "UiState Minute = ${_uiState.value.selectedMinute}")
     }
 
     fun setSong(uri: String?) {
@@ -129,6 +143,7 @@ class ListViewModel @Inject constructor(
                 state.selectedMinute != null
             ) {
                 String.format(
+                    Locale.getDefault(),
                     "%02d:%02d",
                     state.selectedHour,
                     state.selectedMinute
@@ -137,10 +152,14 @@ class ListViewModel @Inject constructor(
                 null
             }
 
+            var noteId: Int
+
             if (isEditMode()) {
 
+                val currentNote = note.value!!
+
                 updateNoteUseCase(
-                    note.value!!.copy(
+                    currentNote.copy(
                         title = state.title,
                         content = state.content,
                         selectedDate = displayDate,
@@ -148,15 +167,75 @@ class ListViewModel @Inject constructor(
                     )
                 )
 
+                noteId = currentNote.id
+
             } else {
 
-                insertNoteUseCase(
+                noteId = insertNoteUseCase(
                     folderId = folderId,
                     title = state.title,
                     content = state.content,
                     selectedDate = displayDate,
                     selectedTime = displayTime
-                )
+                ).toInt()
+            }
+
+
+
+            if (
+                state.selectedDateMillis != null &&
+                state.selectedHour != null &&
+                state.selectedMinute != null
+            ) {
+
+                val calendar = Calendar.getInstance().apply {
+                    timeInMillis = state.selectedDateMillis
+                    set(Calendar.HOUR_OF_DAY, state.selectedHour)
+                    set(Calendar.MINUTE, state.selectedMinute)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }
+                val triggerTimeMillis = calendar.timeInMillis
+
+                val alarm = getAlarmByNoteIdUseCase(noteId)
+
+                if (alarm == null) {
+
+
+                    val alarmId = insertAlarmUseCase(
+                        noteId = noteId,
+                        triggerTimeMillis = triggerTimeMillis,
+                        label = state.title
+                    ).toInt()
+
+                    alarmScheduler.schedule(
+                        alarmId = alarmId,
+                        triggerTimeMillis = triggerTimeMillis,
+                        title = state.title,
+                        message = state.content,
+                        noteId = noteId
+                    )
+
+                } else {
+
+
+                    alarmScheduler.cancel(alarm.id)
+
+                    updateAlarmUseCase(
+                        alarm.copy(
+                            triggerTimeMillis = triggerTimeMillis,
+                            label = state.title
+                        )
+                    )
+
+                    alarmScheduler.schedule(
+                        alarmId = alarm.id,
+                        triggerTimeMillis = triggerTimeMillis,
+                        title = state.title,
+                        message = state.content,
+                        noteId = noteId
+                    )
+                }
             }
 
             onSaved()

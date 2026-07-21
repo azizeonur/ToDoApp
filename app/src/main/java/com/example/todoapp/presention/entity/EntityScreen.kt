@@ -122,21 +122,29 @@ fun EntityList(
                 viewModel.dismissDialog()
             },
             onSave = {
+
+                val title = uiState.title.trim()
+                val description = uiState.description.trim()
+
+                if (title.isBlank() || description.isBlank()) {
+                    viewModel.dismissDialog()
+                }
+
                 val editingEntity = uiState.editingEntity
 
                 if (editingEntity == null) {
 
                     viewModel.insertEntity(
-                        title = uiState.title.trim(),
-                        description = uiState.description.trim()
+                        title = title,
+                        description = description
                     )
 
                 } else {
 
                     viewModel.updateEntity(
                         editingEntity.copy(
-                            title = uiState.title.trim(),
-                            description = uiState.description.trim()
+                            title = title,
+                            description = description
                         )
                     )
                 }

@@ -16,6 +16,8 @@ interface AlarmRepository {
         triggerTimeMillis: Long,
         label: String
     ): Long
+suspend fun getAlarmByNoteId
+        (noteId: Int): AlarmEntity?
 
     suspend fun updateAlarm(
         alarm: AlarmEntity

@@ -1,5 +1,6 @@
 package com.example.todoapp.presention.compenent
 
+import android.util.Log
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
@@ -18,8 +19,11 @@ fun TimePickerDialogComponent(
     onTimeSelected: (Int, Int) -> Unit
 ) {
 
-    val timePickerState = rememberTimePickerState()
-
+    val timePickerState = rememberTimePickerState(
+        initialHour = 0,
+        initialMinute = 0,
+        is24Hour = true
+    )
     if (show) {
 
         AlertDialog(
