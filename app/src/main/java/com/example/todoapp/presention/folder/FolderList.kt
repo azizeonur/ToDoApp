@@ -1,5 +1,6 @@
 package com.example.todoapp.presention.folder
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,7 +26,8 @@ import com.example.todoapp.presention.compenent.DeleteDialogComponent
 @Composable
 fun FolderList(
     onFolderClick: (Int) -> Unit,
-    onAddNoteClick: (Int) -> Unit,
+    onAddNoteClick: () -> Unit,
+    notificationFolderId: Int = -1,
     viewModel: FolderViewModel = hiltViewModel()
 ) {
 
@@ -44,12 +46,14 @@ fun FolderList(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-
             items(folders) { folder ->
                 val lastNote = folder.notes.lastOrNull()
+                val note = lastNote?.note
+                val alarm = lastNote?.alarms?.firstOrNull()
+
                 FolderItem(
-                    title = lastNote?.title.orEmpty().take(12),
-                    description = lastNote?.content.orEmpty().take(12),
+                    title = note?.title.orEmpty().take(12),
+                    description = note?.content.orEmpty().take(12),
                     onClick = {
                         onFolderClick(folder.folder.id)
                     },
@@ -59,29 +63,26 @@ fun FolderList(
                     onDeleteClick = {
                         viewModel.showDeleteDialog(folder.folder)
                     },
-                    selectedDate = lastNote?.selectedDate,
-                    selectedTime = lastNote?.selectedTime,
+                    selectedDate = note?.selectedDate,
+                    selectedTime = note?.selectedTime,
+                    repeatType = alarm?.repeatType,
+                    shouldShake = folder.folder.id == notificationFolderId,
                 )
-
             }
-
         }
+
         FloatingActionButton(
             modifier = Modifier
                 .padding(24.dp)
                 .align(Alignment.BottomEnd),
             onClick = {
-                viewModel.insertFolder(
-                    title = "",
-                    description = ""
-                ) { folderId ->
-                    onAddNoteClick(folderId)
-                }
+                onAddNoteClick()
             }
         ) {
             Text(stringResource(R.string.add_note))
         }
     }
+
     DeleteDialogComponent(
         show = uiState.showDeleteDialog,
         title = stringResource(R.string.delete_folder_title),

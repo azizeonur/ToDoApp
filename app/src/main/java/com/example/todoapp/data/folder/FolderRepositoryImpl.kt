@@ -19,7 +19,11 @@ class FolderRepositoryImpl @Inject constructor(
     ): Flow<List<FolderWithNotes>> {
         return folderDao.getFoldersWithNotesByEntityId(entityId)
     }
-
+    override suspend fun getFolderById(
+        folderId: Int
+    ): FolderEntity? {
+        return folderDao.getFolderById(folderId)
+    }
     override suspend fun insertFolder(
         entityId: Int,
         title: String,

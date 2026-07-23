@@ -19,6 +19,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        val entityId = intent.getIntExtra("entityId", -1)
+        val folderId = intent.getIntExtra("folderId", -1)
+
         setContent {
             ToDoAppTheme {
                 Scaffold(
@@ -26,7 +29,10 @@ class MainActivity : ComponentActivity() {
                 ) { innerPadding ->
 
                     ToDoAppNavHost(
-                        modifier = Modifier.padding(innerPadding)
+                        modifier = Modifier.padding(innerPadding),
+                        entityId = entityId,
+                        notificationFolderId = folderId
+
                     )
                 }
             }

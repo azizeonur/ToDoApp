@@ -21,4 +21,7 @@
     <string name="select_time">Saat Seçiniz...</string>
     <string name="select_song">Şarkı Seçiniz...</string>
     <string name="song">ŞARKI</string>
+    <string name="empty_note_message">
+    Please fill in at least one field.
+</string>
 </resources>

@@ -7,12 +7,15 @@ import com.example.todoapp.data.folder.FolderEntity
 import com.example.todoapp.data.note.NoteEntity
 
 data class FolderWithNotes(
-    @Embedded val folder: FolderEntity,
+    @Embedded
+    val folder: FolderEntity,
+
     @Relation(
+        entity = NoteEntity::class,
         parentColumn = "id",
         entityColumn = "folderId"
     )
-    val notes: List<NoteEntity>
+    val notes: List<NoteWithAlarms>
 )
 
 data class NoteWithAlarms(

@@ -9,6 +9,10 @@ interface FolderRepository {
         entityId: Int
     ): Flow<List<FolderEntity>>
 
+    suspend fun getFolderById(
+        folderId: Int
+    ): FolderEntity?
+
     suspend fun insertFolder(
         entityId: Int,
         title: String,

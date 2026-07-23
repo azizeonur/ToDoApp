@@ -1,6 +1,7 @@
 package com.example.todoapp.data.alarm
 
 
+import com.example.todoapp.data.database.RepeatType
 import kotlinx.coroutines.flow.Flow
 
 interface AlarmRepository {
@@ -14,7 +15,9 @@ interface AlarmRepository {
     suspend fun insertAlarm(
         noteId: Int,
         triggerTimeMillis: Long,
-        label: String
+        label: String,
+        repeatType: RepeatType
+
     ): Long
 suspend fun getAlarmByNoteId
         (noteId: Int): AlarmEntity?

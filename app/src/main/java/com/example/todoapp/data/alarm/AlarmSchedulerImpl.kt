@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.util.Log
+import com.example.todoapp.data.database.RepeatType
 import com.example.todoapp.domain.alarmUseCase.AlarmScheduler
 import com.example.todoapp.receiver.NotificationReceiver
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -24,7 +25,10 @@ class AlarmSchedulerImpl @Inject constructor(
         triggerTimeMillis: Long,
         title: String,
         message: String,
-        noteId: Int
+        noteId: Int,
+        folderId: Int,
+        entityId: Int,
+        repeatType: RepeatType
     ) {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -33,38 +37,18 @@ class AlarmSchedulerImpl @Inject constructor(
             }
         }
 
-        Log.d(
-            "AlarmTest",
-            "NOW = ${
-                java.text.SimpleDateFormat(
-                    "dd.MM.yyyy HH:mm:ss",
-                    java.util.Locale.getDefault()
-                ).format(java.util.Date())
-            }"
-        )
-
-        Log.d(
-            "AlarmTest",
-            "TRIGGER = ${
-                java.text.SimpleDateFormat(
-                    "dd.MM.yyyy HH:mm:ss",
-                    java.util.Locale.getDefault()
-                ).format(java.util.Date(triggerTimeMillis))
-            }"
-        )
-
-        Log.d(
-            "AlarmTest",
-            "FARK = ${(triggerTimeMillis - System.currentTimeMillis()) / 1000} saniye"
-        )
-
         val intent = Intent(
             context,
             NotificationReceiver::class.java
         ).apply {
-            putExtra("noteId", noteId)
+            putExtra("entityId", entityId)
             putExtra("title", title)
             putExtra("message", message)
+            putExtra("folderId", folderId)
+            putExtra("alarmId", alarmId)
+            putExtra("triggerTimeMillis", triggerTimeMillis)
+            putExtra("repeatType", repeatType.name)
+            putExtra("noteId", noteId)
         }
 
         val pendingIntent = PendingIntent.getBroadcast(
@@ -79,8 +63,6 @@ class AlarmSchedulerImpl @Inject constructor(
             triggerTimeMillis,
             pendingIntent
         )
-
-        Log.d("AlarmTest", "AlarmManager.setExactAndAllowWhileIdle çağrıldı")
     }
 
     override fun cancel(alarmId: Int) {

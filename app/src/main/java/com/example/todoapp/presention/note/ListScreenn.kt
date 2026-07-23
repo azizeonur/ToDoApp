@@ -1,5 +1,6 @@
 package com.example.todoapp.presention.note
 
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
@@ -15,11 +16,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.todoapp.R
+import com.example.todoapp.data.database.RepeatType
 import com.example.todoapp.presention.compenent.DatePickerDialogComponent
+import com.example.todoapp.presention.compenent.RepeatTypeComponent
 import com.example.todoapp.presention.compenent.SelectField
 import com.example.todoapp.presention.compenent.TimePickerDialogComponent
 import java.text.SimpleDateFormat
@@ -31,7 +35,6 @@ fun ListScreen(
     onBack: () -> Unit,
     viewModel: ListViewModel = hiltViewModel()
 ) {
-
     val uiState by viewModel.uiState.collectAsState()
 
     val launcher = rememberLauncherForActivityResult(
@@ -60,7 +63,7 @@ fun ListScreen(
             ""
         }
 
-
+    val dateEnabled = uiState.repeatType == RepeatType.NONE
     Column(
         modifier = Modifier.padding(16.dp)
     ) {
@@ -88,13 +91,20 @@ fun ListScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        RepeatTypeComponent(
+            repeatType = uiState.repeatType,
+            onRepeatTypeSelected = viewModel::setRepeatType
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+
         SelectField(
             title = stringResource(R.string.date),
             value = displayDate,
             placeholder = stringResource(R.string.select_date),
             onClick = {
                 viewModel.showDatePicker(true)
-            }
+            },
+            enabled = dateEnabled,
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -120,11 +130,20 @@ fun ListScreen(
         )
 
         Spacer(modifier = Modifier.height(12.dp))
-
+        val context = LocalContext.current
         Button(
             modifier = Modifier.align(Alignment.End),
             onClick = {
-                viewModel.saveNote(onBack)
+                viewModel.saveNote(
+                    onSaved = onBack,
+                    onError = {
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.empty_note_message),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                )
             }
         ) {
             Text(stringResource(R.string.SAVE))

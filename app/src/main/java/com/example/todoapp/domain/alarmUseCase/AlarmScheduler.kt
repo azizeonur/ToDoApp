@@ -1,5 +1,7 @@
 package com.example.todoapp.domain.alarmUseCase
 
+import com.example.todoapp.data.database.RepeatType
+
 interface AlarmScheduler {
 
     fun schedule(
@@ -7,7 +9,10 @@ interface AlarmScheduler {
         triggerTimeMillis: Long,
         title: String,
         message: String,
-        noteId: Int
+        noteId: Int,
+        folderId: Int,
+        entityId: Int,
+        repeatType: RepeatType
     )
 
     fun cancel(

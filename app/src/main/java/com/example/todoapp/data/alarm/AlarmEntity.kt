@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.example.todoapp.data.database.RepeatType
 import com.example.todoapp.data.note.NoteEntity
 
 @Entity(
@@ -22,5 +23,6 @@ data class AlarmEntity(
     val noteId: Int,
     val triggerTimeMillis: Long,
     val label: String = "",
-    val isActive: Boolean = true
+    val isActive: Boolean = true,
+    val repeatType: RepeatType = RepeatType.NONE
 )

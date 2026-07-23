@@ -45,8 +45,14 @@ class FolderViewModel @Inject constructor(
     fun insertFolder(
         title: String,
         description: String,
-        onInserted: (Int) -> Unit
+        onInserted: (Int) -> Unit,
+        onError: () -> Unit
     ) {
+        if (title.isBlank() && description.isBlank()) {
+            onError()
+            return
+        }
+
         viewModelScope.launch {
 
             val folderId = insertFolderUseCase(

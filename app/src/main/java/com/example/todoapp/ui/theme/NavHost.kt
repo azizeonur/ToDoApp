@@ -1,6 +1,7 @@
 package com.example.todoapp.ui.theme
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -13,7 +14,11 @@ import com.example.todoapp.presention.note.ListScreen
 
 
 @Composable
-fun ToDoAppNavHost(modifier: Modifier = Modifier) {
+fun ToDoAppNavHost(
+    modifier: Modifier = Modifier,
+    entityId: Int = -1,
+    notificationFolderId: Int = -1
+) {
 
     val navController = rememberNavController()
 
@@ -23,14 +28,13 @@ fun ToDoAppNavHost(modifier: Modifier = Modifier) {
         modifier = modifier
     ) {
 
-        composable(route = Router.ENTITY) {
+        composable(Router.ENTITY) {
 
             EntityList(
-                onEntityClick = { entityId ->
-                    navController.navigate("${Router.FOLDER}/$entityId")
+                onEntityClick = { id ->
+                    navController.navigate("${Router.FOLDER}/$id")
                 }
             )
-
         }
 
         composable(
@@ -40,21 +44,41 @@ fun ToDoAppNavHost(modifier: Modifier = Modifier) {
                     type = NavType.IntType
                 }
             )
-        ) {
+        ) { backStackEntry ->
+
+            val currentEntityId =
+                backStackEntry.arguments?.getInt("entityId")
+                    ?: return@composable
 
             FolderList(
                 onFolderClick = { folderId ->
-                    navController.navigate("${Router.LIST}/$folderId")
+                    navController.navigate("editNote/$folderId")
                 },
-                onAddNoteClick = { folderId ->
-                    navController.navigate("${Router.LIST}/$folderId")
-                }
+                onAddNoteClick = {
+                    navController.navigate("addNote/$currentEntityId")
+                },
+                notificationFolderId = notificationFolderId
             )
-
         }
 
         composable(
-            route = "${Router.LIST}/{folderId}",
+            route = "addNote/{entityId}",
+            arguments = listOf(
+                navArgument("entityId") {
+                    type = NavType.IntType
+                }
+            )
+        ) {
+
+            ListScreen(
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(
+            route = "editNote/{folderId}",
             arguments = listOf(
                 navArgument("folderId") {
                     type = NavType.IntType
@@ -67,8 +91,14 @@ fun ToDoAppNavHost(modifier: Modifier = Modifier) {
                     navController.popBackStack()
                 }
             )
-
         }
     }
 
+    LaunchedEffect(entityId) {
+        if (entityId != -1) {
+            navController.navigate("${Router.FOLDER}/$entityId") {
+                launchSingleTop = true
+            }
+        }
+    }
 }

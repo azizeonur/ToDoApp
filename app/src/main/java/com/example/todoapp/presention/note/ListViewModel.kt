@@ -1,44 +1,42 @@
 package com.example.todoapp.presention.note
 
-import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.todoapp.data.database.RepeatType
 import com.example.todoapp.data.note.NoteEntity
-import com.example.todoapp.domain.alarmUseCase.AlarmScheduler
 import com.example.todoapp.domain.alarmUseCase.GetAlarmByNoteIdUseCase
-import com.example.todoapp.domain.alarmUseCase.InsertAlarmUseCase
-import com.example.todoapp.domain.alarmUseCase.UpdateAlarmUseCase
-import com.example.todoapp.domain.noteUseCase.DeleteNoteUseCase
+import com.example.todoapp.domain.folderUseCase.InsertFolderUseCase
 import com.example.todoapp.domain.noteUseCase.GetNotesByFolderIdUseCase
 import com.example.todoapp.domain.noteUseCase.InsertNoteUseCase
+import com.example.todoapp.domain.noteUseCase.SaveAlarmUseCase
 import com.example.todoapp.domain.noteUseCase.UpdateNoteUseCase
+import com.example.todoapp.presention.extension.toFormattedDate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
-import java.util.Calendar
-
+import com.example.todoapp.presention.extension.toFormattedTime
 
 @HiltViewModel
 class ListViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val insertNoteUseCase: InsertNoteUseCase,
+    private val insertFolderUseCase: InsertFolderUseCase,
     private val updateNoteUseCase: UpdateNoteUseCase,
-    private val updateAlarmUseCase: UpdateAlarmUseCase,
-    private val deleteNoteUseCase: DeleteNoteUseCase,
-    private val insertAlarmUseCase: InsertAlarmUseCase,
-    private val alarmScheduler: AlarmScheduler,
+    private val saveAlarmUseCase: SaveAlarmUseCase,
     private val getAlarmByNoteIdUseCase: GetAlarmByNoteIdUseCase,
-    private val getNotesByFolderIdUseCase: GetNotesByFolderIdUseCase
+    private val getNotesByFolderIdUseCase: GetNotesByFolderIdUseCase,
 ) : ViewModel() {
 
-    private val folderId: Int =
-        checkNotNull(savedStateHandle["folderId"])
+    private val folderId: Int? =
+        savedStateHandle["folderId"]
+
+    private val entityId: Int? =
+        savedStateHandle["entityId"]
 
     private val _uiState = MutableStateFlow(NoteUiState())
     val uiState = _uiState.asStateFlow()
@@ -51,7 +49,10 @@ class ListViewModel @Inject constructor(
     }
 
     private fun loadNote() {
+        val id = folderId ?: return
+
         viewModelScope.launch {
+
             val note = getNotesByFolderIdUseCase(folderId)
             _note.value = note
 
@@ -64,18 +65,25 @@ class ListViewModel @Inject constructor(
                     ).parse(date)?.time
                 }
 
-                val hour =
-                    it.selectedTime?.split(":")?.getOrNull(0)?.toIntOrNull()
+                val alarm = getAlarmByNoteIdUseCase(it.id)
 
-                val minute =
-                    it.selectedTime?.split(":")?.getOrNull(1)?.toIntOrNull()
+                val timeParts = it.selectedTime?.split(":")
+
+                val hour = timeParts
+                    ?.getOrNull(0)
+                    ?.toIntOrNull()
+
+                val minute = timeParts
+                    ?.getOrNull(1)
+                    ?.toIntOrNull()
 
                 _uiState.value = _uiState.value.copy(
                     title = it.title,
                     content = it.content,
                     selectedDateMillis = millis,
                     selectedHour = hour,
-                    selectedMinute = minute
+                    selectedMinute = minute,
+                    repeatType = alarm?.repeatType ?: RepeatType.NONE
                 )
             }
         }
@@ -104,16 +112,10 @@ class ListViewModel @Inject constructor(
     }
 
     fun setTime(hour: Int, minute: Int) {
-        Log.d("AlarmTest", "setTime Hour = $hour")
-        Log.d("AlarmTest", "setTime Minute = $minute")
-
         _uiState.value = _uiState.value.copy(
             selectedHour = hour,
             selectedMinute = minute
         )
-
-        Log.d("AlarmTest", "UiState Hour = ${_uiState.value.selectedHour}")
-        Log.d("AlarmTest", "UiState Minute = ${_uiState.value.selectedMinute}")
     }
 
     fun setSong(uri: String?) {
@@ -121,144 +123,97 @@ class ListViewModel @Inject constructor(
             selectedSongUri = uri
         )
     }
-
     fun isEditMode(): Boolean = note.value != null
 
     fun saveNote(
-        onSaved: () -> Unit
+        onSaved: () -> Unit,
+        onError: () -> Unit
     ) {
         viewModelScope.launch {
 
             val state = uiState.value
 
-            val displayDate = state.selectedDateMillis?.let {
-                SimpleDateFormat(
-                    "dd MMM yyyy",
-                    Locale.getDefault()
-                ).format(Date(it))
+            if (!state.canSave()) {
+                onError()
+                return@launch
             }
 
-            val displayTime = if (
-                state.selectedHour != null &&
-                state.selectedMinute != null
-            ) {
-                String.format(
-                    Locale.getDefault(),
-                    "%02d:%02d",
-                    state.selectedHour,
-                    state.selectedMinute
-                )
-            } else {
-                null
-            }
+            val (noteId, currentFolderId) = saveOrUpdateNote(state)
 
-            var noteId: Int
-
-            if (isEditMode()) {
-
-                val currentNote = note.value!!
-
-                updateNoteUseCase(
-                    currentNote.copy(
-                        title = state.title,
-                        content = state.content,
-                        selectedDate = displayDate,
-                        selectedTime = displayTime
-                    )
-                )
-
-                noteId = currentNote.id
-
-            } else {
-
-                noteId = insertNoteUseCase(
-                    folderId = folderId,
-                    title = state.title,
-                    content = state.content,
-                    selectedDate = displayDate,
-                    selectedTime = displayTime
-                ).toInt()
-            }
-
-
-
-            if (
-                state.selectedDateMillis != null &&
-                state.selectedHour != null &&
-                state.selectedMinute != null
-            ) {
-
-                val calendar = Calendar.getInstance().apply {
-                    timeInMillis = state.selectedDateMillis
-                    set(Calendar.HOUR_OF_DAY, state.selectedHour)
-                    set(Calendar.MINUTE, state.selectedMinute)
-                    set(Calendar.SECOND, 0)
-                    set(Calendar.MILLISECOND, 0)
-                }
-                val triggerTimeMillis = calendar.timeInMillis
-
-                val alarm = getAlarmByNoteIdUseCase(noteId)
-
-                if (alarm == null) {
-
-
-                    val alarmId = insertAlarmUseCase(
-                        noteId = noteId,
-                        triggerTimeMillis = triggerTimeMillis,
-                        label = state.title
-                    ).toInt()
-
-                    alarmScheduler.schedule(
-                        alarmId = alarmId,
-                        triggerTimeMillis = triggerTimeMillis,
-                        title = state.title,
-                        message = state.content,
-                        noteId = noteId
-                    )
-
-                } else {
-
-
-                    alarmScheduler.cancel(alarm.id)
-
-                    updateAlarmUseCase(
-                        alarm.copy(
-                            triggerTimeMillis = triggerTimeMillis,
-                            label = state.title
-                        )
-                    )
-
-                    alarmScheduler.schedule(
-                        alarmId = alarm.id,
-                        triggerTimeMillis = triggerTimeMillis,
-                        title = state.title,
-                        message = state.content,
-                        noteId = noteId
-                    )
-                }
-            }
+            saveAlarmUseCase(
+                noteId = noteId,
+                folderId = currentFolderId,
+                title = state.title,
+                message = state.content,
+                selectedDateMillis = state.selectedDateMillis,
+                hour = state.selectedHour,
+                minute = state.selectedMinute,
+                repeatType = state.repeatType
+            )
 
             onSaved()
         }
     }
 
-    fun deleteNote(note: NoteEntity) {
-        viewModelScope.launch {
-            deleteNoteUseCase(note)
+    private suspend fun saveOrUpdateNote(
+        state: NoteUiState
+    ): Pair<Int, Int> {
+
+        val selectedDate = state.selectedDateMillis.toFormattedDate()
+        val selectedTime = state.selectedHour.toFormattedTime(
+            state.selectedMinute
+        )
+
+        return if (isEditMode()) {
+
+            val currentNote = note.value!!
+
+            updateNoteUseCase(
+                currentNote.copy(
+                    title = state.title,
+                    content = state.content,
+                    selectedDate = selectedDate,
+                    selectedTime = selectedTime
+                )
+            )
+
+            Pair(currentNote.id, currentNote.folderId)
+
+        } else {
+
+            val currentFolderId = folderId ?: insertFolderUseCase(
+                entityId = checkNotNull(entityId),
+                title = "",
+                description = ""
+            ).toInt()
+
+            val noteId = insertNoteUseCase(
+                folderId = currentFolderId,
+                title = state.title,
+                content = state.content,
+                selectedDate = selectedDate,
+                selectedTime = selectedTime
+            ).toInt()
+
+            Pair(noteId, currentFolderId)
         }
     }
 
-    fun addAlarm(
-        noteId: Int,
-        triggerTimeMillis: Long,
-        label: String
+    private fun NoteUiState.canSave(): Boolean {
+        return title.isNotBlank() ||
+                content.isNotBlank() ||
+                selectedDateMillis != null ||
+                selectedHour != null ||
+                selectedMinute != null ||
+                selectedSongUri != null ||
+                repeatType != RepeatType.NONE
+    }
+
+    fun setRepeatType(
+        repeatType: RepeatType
     ) {
-        viewModelScope.launch {
-            insertAlarmUseCase(
-                noteId = noteId,
-                triggerTimeMillis = triggerTimeMillis,
-                label = label
-            )
-        }
+        _uiState.value = _uiState.value.copy(
+            repeatType = repeatType
+        )
     }
 }

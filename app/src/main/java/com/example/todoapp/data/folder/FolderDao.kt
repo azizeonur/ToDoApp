@@ -26,7 +26,12 @@ interface FolderDao {
         entityId: Int
     ): Flow<List<FolderWithNotes>>
 
-    @Insert(onConflict = OnConflictStrategy.Companion.REPLACE)
+    @Query("SELECT * FROM folders WHERE id = :folderId")
+    suspend fun getFolderById(
+        folderId: Int
+    ): FolderEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFolder(folder: FolderEntity): Long
 
     @Update

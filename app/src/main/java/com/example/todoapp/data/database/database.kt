@@ -4,8 +4,10 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import com.example.todoapp.data.alarm.AlarmDao
 import com.example.todoapp.data.alarm.AlarmEntity
+import com.example.todoapp.data.alarm.RepeatTypeConverter
 import com.example.todoapp.data.entity.EntityDao
 import com.example.todoapp.data.entity.EntityEntity
 import com.example.todoapp.data.folder.FolderDao
@@ -15,9 +17,10 @@ import com.example.todoapp.data.note.NoteEntity
 
 @Database(
     entities = [FolderEntity::class, NoteEntity::class, AlarmEntity::class, EntityEntity::class],
-    version = 7,
+    version = 8,
     exportSchema = false
 )
+@TypeConverters(RepeatTypeConverter::class)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun folderDao(): FolderDao

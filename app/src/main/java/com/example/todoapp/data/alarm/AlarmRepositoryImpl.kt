@@ -1,5 +1,6 @@
 package com.example.todoapp.data.alarm
 
+import com.example.todoapp.data.database.RepeatType
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
@@ -18,13 +19,17 @@ class AlarmRepositoryImpl @Inject constructor(private val alarmDao: AlarmDao) :
     override suspend fun insertAlarm(
         noteId: Int,
         triggerTimeMillis: Long,
-        label: String
+        label: String,
+        repeatType: RepeatType
+
     ): Long {
         return alarmDao.insertAlarm(
             AlarmEntity(
                 noteId = noteId,
                 triggerTimeMillis = triggerTimeMillis,
-                label = label
+                label = label,
+                repeatType = repeatType
+
             )
         )
     }

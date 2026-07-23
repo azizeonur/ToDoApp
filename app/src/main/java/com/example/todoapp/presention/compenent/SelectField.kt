@@ -11,6 +11,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 
 
@@ -19,7 +20,8 @@ fun SelectField(
     title: String,
     value: String,
     placeholder: String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    enabled: Boolean = true
 ) {
 
     Column {
@@ -34,7 +36,12 @@ fun SelectField(
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable {
+                .alpha(
+                    if (enabled) 1f else 0.5f
+                )
+                .clickable (
+                    enabled = enabled
+                ){
                     onClick()
                 },
             tonalElevation = 2.dp,
