@@ -11,12 +11,16 @@ class InsertAlarmUseCase @Inject constructor(
         noteId: Int,
         triggerTimeMillis: Long,
         label: String,
-        repeatType: RepeatType
+        repeatType: RepeatType,
+        songUrl: String?,
+        songName: String?
     ) =
         repository.insertAlarm(
             noteId,
             triggerTimeMillis,
             label,
-            repeatType
+            repeatType,
+            songUrl,
+            songName
         )
 }

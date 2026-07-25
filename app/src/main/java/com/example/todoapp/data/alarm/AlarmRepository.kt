@@ -16,7 +16,9 @@ interface AlarmRepository {
         noteId: Int,
         triggerTimeMillis: Long,
         label: String,
-        repeatType: RepeatType
+        repeatType: RepeatType,
+        songUrl: String?,
+        songName: String?
 
     ): Long
 suspend fun getAlarmByNoteId

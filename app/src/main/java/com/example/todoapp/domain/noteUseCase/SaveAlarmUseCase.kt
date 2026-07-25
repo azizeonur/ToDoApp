@@ -26,7 +26,9 @@ class SaveAlarmUseCase @Inject constructor(
         selectedDateMillis: Long?,
         hour: Int?,
         minute: Int?,
-        repeatType: RepeatType
+        repeatType: RepeatType,
+        songUrl: String?,
+        songName: String?
     ) {
 
         val triggerTime = calculateTriggerTimeUseCase(
@@ -39,8 +41,7 @@ class SaveAlarmUseCase @Inject constructor(
         val entityId =
             getFolderByIdUseCase(folderId)?.entityId ?: return
 
-        val alarm =
-            getAlarmByNoteIdUseCase(noteId)
+        val alarm = getAlarmByNoteIdUseCase(noteId)
 
         val alarmId = if (alarm == null) {
 
@@ -48,7 +49,9 @@ class SaveAlarmUseCase @Inject constructor(
                 noteId = noteId,
                 triggerTimeMillis = triggerTime,
                 label = title,
-                repeatType = repeatType
+                repeatType = repeatType,
+                songUrl = songUrl,
+                songName = songName
             ).toInt()
 
         } else {
@@ -59,7 +62,9 @@ class SaveAlarmUseCase @Inject constructor(
                 alarm.copy(
                     triggerTimeMillis = triggerTime,
                     label = title,
-                    repeatType = repeatType
+                    repeatType = repeatType,
+                    songUrl = songUrl,
+                    songName = songName
                 )
             )
 
@@ -67,14 +72,16 @@ class SaveAlarmUseCase @Inject constructor(
         }
 
         alarmScheduler.schedule(
-            alarmId = alarmId,
             triggerTimeMillis = triggerTime,
+            alarmId = alarmId,
             title = title,
             message = message,
             noteId = noteId,
             folderId = folderId,
             entityId = entityId,
-            repeatType = repeatType
+            repeatType = repeatType,
+            songUrl = songUrl,
+            songName = songName
         )
     }
 }

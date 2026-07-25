@@ -11,6 +11,8 @@ import com.example.todoapp.domain.folderUseCase.InsertFolderUseCase
 import com.example.todoapp.domain.folderUseCase.UpdateFolderUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import com.example.todoapp.data.database.FolderWithNotes
+import com.example.todoapp.data.note.NoteEntity
+import com.example.todoapp.domain.noteUseCase.UpdateNoteUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -25,6 +27,7 @@ class FolderViewModel @Inject constructor(
     private val insertFolderUseCase: InsertFolderUseCase,
     private val updateFolderUseCase: UpdateFolderUseCase,
     private val deleteFolderUseCase: DeleteFolderUseCase,
+    private val updateNoteUseCase: UpdateNoteUseCase,
     private val getFoldersByEntityIdUseCase: GetFoldersByEntityIdUseCase
 ) : ViewModel() {
 
@@ -41,6 +44,19 @@ class FolderViewModel @Inject constructor(
                 started = SharingStarted.WhileSubscribed(5000),
                 initialValue = emptyList()
             )
+
+    fun toggleCompleted(
+        note: NoteEntity,
+        checked: Boolean
+    ) {
+        viewModelScope.launch {
+            updateNoteUseCase(
+                note.copy(
+                    isCompleted = checked
+                )
+            )
+        }
+    }
 
     fun insertFolder(
         title: String,

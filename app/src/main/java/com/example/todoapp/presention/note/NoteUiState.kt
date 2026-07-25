@@ -9,6 +9,7 @@ data class NoteUiState(
     val selectedDateMillis: Long? = null,
     val selectedHour: Int? = null,
     val selectedMinute: Int? = null,
+    val selectedSongName: String? = null,
     val selectedSongUri: String? = null,
     val showDatePicker: Boolean = false,
     val showTimePicker: Boolean = false

@@ -19,6 +19,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.todoapp.R
 import com.example.todoapp.presention.compenent.DeleteDialogComponent
 
@@ -62,6 +63,12 @@ fun FolderList(
                     },
                     onDeleteClick = {
                         viewModel.showDeleteDialog(folder.folder)
+                    },
+                    isCompleted = note?.isCompleted ?: false,
+                    onCheckedChange = { checked ->
+                        note?.let {
+                            viewModel.toggleCompleted(it, checked)
+                        }
                     },
                     selectedDate = note?.selectedDate,
                     selectedTime = note?.selectedTime,

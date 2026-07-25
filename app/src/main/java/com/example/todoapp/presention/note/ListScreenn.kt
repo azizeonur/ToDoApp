@@ -12,6 +12,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -26,21 +27,32 @@ import com.example.todoapp.presention.compenent.DatePickerDialogComponent
 import com.example.todoapp.presention.compenent.RepeatTypeComponent
 import com.example.todoapp.presention.compenent.SelectField
 import com.example.todoapp.presention.compenent.TimePickerDialogComponent
+import com.example.todoapp.presention.song.SongSelectionViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-
 @Composable
 fun ListScreen(
     onBack: () -> Unit,
+    onSelectSong: () -> Unit,
+    selectionViewModel: SongSelectionViewModel,
     viewModel: ListViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    val launcher = rememberLauncherForActivityResult(
-        ActivityResultContracts.GetContent()
-    ) { uri ->
-        viewModel.setSong(uri?.toString())
+    val selectedSong by selectionViewModel
+        .selectedSong
+        .collectAsState()
+
+    LaunchedEffect(selectedSong) {
+        selectedSong?.let { song ->
+            viewModel.setSong(
+                songName = song.name,
+                songUrl = song.url
+            )
+
+            selectionViewModel.clearSelection()
+        }
     }
 
     val displayDate =
@@ -52,7 +64,10 @@ fun ListScreen(
         } ?: ""
 
     val displayTime =
-        if (uiState.selectedHour != null && uiState.selectedMinute != null) {
+        if (
+            uiState.selectedHour != null &&
+            uiState.selectedMinute != null
+        ) {
             String.format(
                 Locale.getDefault(),
                 "%02d:%02d",
@@ -63,7 +78,11 @@ fun ListScreen(
             ""
         }
 
-    val dateEnabled = uiState.repeatType == RepeatType.NONE
+    val dateEnabled =
+        uiState.repeatType == RepeatType.NONE
+
+    val context = LocalContext.current
+
     Column(
         modifier = Modifier.padding(16.dp)
     ) {
@@ -93,18 +112,21 @@ fun ListScreen(
 
         RepeatTypeComponent(
             repeatType = uiState.repeatType,
-            onRepeatTypeSelected = viewModel::setRepeatType
+            onRepeatTypeSelected =
+                viewModel::setRepeatType
         )
+
         Spacer(modifier = Modifier.height(12.dp))
 
         SelectField(
             title = stringResource(R.string.date),
             value = displayDate,
-            placeholder = stringResource(R.string.select_date),
+            placeholder =
+                stringResource(R.string.select_date),
             onClick = {
                 viewModel.showDatePicker(true)
             },
-            enabled = dateEnabled,
+            enabled = dateEnabled
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -112,7 +134,8 @@ fun ListScreen(
         SelectField(
             title = stringResource(R.string.time),
             value = displayTime,
-            placeholder = stringResource(R.string.select_time),
+            placeholder =
+                stringResource(R.string.select_time),
             onClick = {
                 viewModel.showTimePicker(true)
             }
@@ -122,15 +145,14 @@ fun ListScreen(
 
         SelectField(
             title = stringResource(R.string.song),
-            value = uiState.selectedSongUri?.substringAfterLast("/") ?: "",
-            placeholder = stringResource(R.string.select_song),
-            onClick = {
-                launcher.launch("audio/*")
-            }
+            value = uiState.selectedSongName ?: "",
+            placeholder =
+                stringResource(R.string.select_song),
+            onClick = onSelectSong
         )
 
         Spacer(modifier = Modifier.height(12.dp))
-        val context = LocalContext.current
+
         Button(
             modifier = Modifier.align(Alignment.End),
             onClick = {
@@ -139,7 +161,9 @@ fun ListScreen(
                     onError = {
                         Toast.makeText(
                             context,
-                            context.getString(R.string.empty_note_message),
+                            context.getString(
+                                R.string.empty_note_message
+                            ),
                             Toast.LENGTH_SHORT
                         ).show()
                     }

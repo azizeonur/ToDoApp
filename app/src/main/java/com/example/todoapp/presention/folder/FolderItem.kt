@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -22,9 +23,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.todoapp.data.database.RepeatType
@@ -40,8 +43,22 @@ fun FolderItem(
     onDeleteClick: () -> Unit,
     shouldShake: Boolean = false,
     repeatType: RepeatType?,
+    isCompleted: Boolean,
+    onCheckedChange: (Boolean) -> Unit
 ) {
     val offsetX = remember { Animatable(0f) }
+
+    val textDecoration = if (isCompleted) {
+        TextDecoration.LineThrough
+    } else {
+        TextDecoration.None
+    }
+
+    val titleColor = if (isCompleted) {
+        Color.LightGray
+    } else {
+        Color.White
+    }
 
     LaunchedEffect(shouldShake) {
         if (shouldShake) {
@@ -65,6 +82,9 @@ fun FolderItem(
             )
             .offset(x = offsetX.value.dp)
             .padding(16.dp)
+            .alpha(
+                if (isCompleted) 0.5f else 1f
+            )
 
     ) {
 
@@ -75,9 +95,10 @@ fun FolderItem(
 
             Text(
                 text = title,
+                textDecoration = textDecoration,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White,
+                color = titleColor,
                 modifier = Modifier.weight(1f)
             )
 
@@ -90,10 +111,18 @@ fun FolderItem(
                     tint = Color.White
                 )
             }
+
+            Checkbox(
+                checked = isCompleted,
+                onCheckedChange = onCheckedChange,
+                modifier = Modifier.padding(start = 8.dp)
+
+            )
         }
 
         Text(
             text = description.orEmpty(),
+            textDecoration = textDecoration,
             fontSize = 14.sp,
             fontStyle = FontStyle.Italic,
             fontWeight = FontWeight.SemiBold,
@@ -113,6 +142,7 @@ fun FolderItem(
                     RepeatType.MONTHLY -> "Monthly"
                     else -> selectedDate.orEmpty()
                 },
+                textDecoration = textDecoration,
                 fontSize = 14.sp,
                 fontStyle = FontStyle.Italic,
                 fontWeight = FontWeight.SemiBold,
@@ -123,6 +153,7 @@ fun FolderItem(
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = selectedTime ?: "",
+                textDecoration = textDecoration,
                 fontSize = 14.sp,
                 fontStyle = FontStyle.Italic,
                 fontWeight = FontWeight.SemiBold,

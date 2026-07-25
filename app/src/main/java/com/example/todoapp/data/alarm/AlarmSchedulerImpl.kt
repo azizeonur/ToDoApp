@@ -28,7 +28,9 @@ class AlarmSchedulerImpl @Inject constructor(
         noteId: Int,
         folderId: Int,
         entityId: Int,
-        repeatType: RepeatType
+        repeatType: RepeatType,
+        songUrl: String?,
+        songName: String?
     ) {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -49,6 +51,8 @@ class AlarmSchedulerImpl @Inject constructor(
             putExtra("triggerTimeMillis", triggerTimeMillis)
             putExtra("repeatType", repeatType.name)
             putExtra("noteId", noteId)
+            putExtra("songUrl", songUrl)
+            putExtra("songName", songName)
         }
 
         val pendingIntent = PendingIntent.getBroadcast(

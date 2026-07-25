@@ -20,7 +20,9 @@ class AlarmRepositoryImpl @Inject constructor(private val alarmDao: AlarmDao) :
         noteId: Int,
         triggerTimeMillis: Long,
         label: String,
-        repeatType: RepeatType
+        repeatType: RepeatType,
+        songUrl: String?,
+        songName: String?
 
     ): Long {
         return alarmDao.insertAlarm(
@@ -28,7 +30,9 @@ class AlarmRepositoryImpl @Inject constructor(private val alarmDao: AlarmDao) :
                 noteId = noteId,
                 triggerTimeMillis = triggerTimeMillis,
                 label = label,
-                repeatType = repeatType
+                repeatType = repeatType,
+                songUrl = songUrl,
+                songName = songName
 
             )
         )

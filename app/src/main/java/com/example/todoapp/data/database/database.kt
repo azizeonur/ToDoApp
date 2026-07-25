@@ -17,7 +17,7 @@ import com.example.todoapp.data.note.NoteEntity
 
 @Database(
     entities = [FolderEntity::class, NoteEntity::class, AlarmEntity::class, EntityEntity::class],
-    version = 8,
+    version = 11,
     exportSchema = false
 )
 @TypeConverters(RepeatTypeConverter::class)

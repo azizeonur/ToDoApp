@@ -3,6 +3,7 @@ package com.example.todoapp.ui.theme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -11,6 +12,8 @@ import androidx.navigation.navArgument
 import com.example.todoapp.presention.entity.EntityList
 import com.example.todoapp.presention.folder.FolderList
 import com.example.todoapp.presention.note.ListScreen
+import com.example.todoapp.presention.song.SongScreen
+import com.example.todoapp.presention.song.SongSelectionViewModel
 
 
 @Composable
@@ -19,8 +22,10 @@ fun ToDoAppNavHost(
     entityId: Int = -1,
     notificationFolderId: Int = -1
 ) {
-
     val navController = rememberNavController()
+
+    val songSelectionViewModel: SongSelectionViewModel =
+        hiltViewModel()
 
     NavHost(
         navController = navController,
@@ -29,10 +34,11 @@ fun ToDoAppNavHost(
     ) {
 
         composable(Router.ENTITY) {
-
             EntityList(
                 onEntityClick = { id ->
-                    navController.navigate("${Router.FOLDER}/$id")
+                    navController.navigate(
+                        "${Router.FOLDER}/$id"
+                    )
                 }
             )
         }
@@ -47,17 +53,23 @@ fun ToDoAppNavHost(
         ) { backStackEntry ->
 
             val currentEntityId =
-                backStackEntry.arguments?.getInt("entityId")
+                backStackEntry.arguments
+                    ?.getInt("entityId")
                     ?: return@composable
 
             FolderList(
                 onFolderClick = { folderId ->
-                    navController.navigate("editNote/$folderId")
+                    navController.navigate(
+                        "editNote/$folderId"
+                    )
                 },
                 onAddNoteClick = {
-                    navController.navigate("addNote/$currentEntityId")
+                    navController.navigate(
+                        "addNote/$currentEntityId"
+                    )
                 },
-                notificationFolderId = notificationFolderId
+                notificationFolderId =
+                    notificationFolderId
             )
         }
 
@@ -69,11 +81,15 @@ fun ToDoAppNavHost(
                 }
             )
         ) {
-
             ListScreen(
                 onBack = {
                     navController.popBackStack()
-                }
+                },
+                onSelectSong = {
+                    navController.navigate(Router.SONGS)
+                },
+                selectionViewModel =
+                    songSelectionViewModel
             )
         }
 
@@ -85,18 +101,34 @@ fun ToDoAppNavHost(
                 }
             )
         ) {
-
             ListScreen(
                 onBack = {
                     navController.popBackStack()
-                }
+                },
+                onSelectSong = {
+                    navController.navigate(Router.SONGS)
+                },
+                selectionViewModel =
+                    songSelectionViewModel
+            )
+        }
+
+        composable(Router.SONGS) {
+            SongScreen(
+                onBack = {
+                    navController.popBackStack()
+                },
+                selectionViewModel =
+                    songSelectionViewModel
             )
         }
     }
 
     LaunchedEffect(entityId) {
         if (entityId != -1) {
-            navController.navigate("${Router.FOLDER}/$entityId") {
+            navController.navigate(
+                "${Router.FOLDER}/$entityId"
+            ) {
                 launchSingleTop = true
             }
         }

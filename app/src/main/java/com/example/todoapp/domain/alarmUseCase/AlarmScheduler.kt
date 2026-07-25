@@ -12,7 +12,9 @@ interface AlarmScheduler {
         noteId: Int,
         folderId: Int,
         entityId: Int,
-        repeatType: RepeatType
+        repeatType: RepeatType,
+        songUrl: String?,
+        songName: String?
     )
 
     fun cancel(

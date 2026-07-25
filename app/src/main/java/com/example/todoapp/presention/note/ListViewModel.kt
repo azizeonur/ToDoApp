@@ -20,6 +20,7 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import javax.inject.Inject
 import com.example.todoapp.presention.extension.toFormattedTime
+import kotlinx.coroutines.flow.update
 
 @HiltViewModel
 class ListViewModel @Inject constructor(
@@ -29,7 +30,7 @@ class ListViewModel @Inject constructor(
     private val updateNoteUseCase: UpdateNoteUseCase,
     private val saveAlarmUseCase: SaveAlarmUseCase,
     private val getAlarmByNoteIdUseCase: GetAlarmByNoteIdUseCase,
-    private val getNotesByFolderIdUseCase: GetNotesByFolderIdUseCase,
+    private val getNotesByFolderIdUseCase: GetNotesByFolderIdUseCase
 ) : ViewModel() {
 
     private val folderId: Int? =
@@ -38,10 +39,14 @@ class ListViewModel @Inject constructor(
     private val entityId: Int? =
         savedStateHandle["entityId"]
 
-    private val _uiState = MutableStateFlow(NoteUiState())
+    private val _uiState =
+        MutableStateFlow(NoteUiState())
+
     val uiState = _uiState.asStateFlow()
 
-    private val _note = MutableStateFlow<NoteEntity?>(null)
+    private val _note =
+        MutableStateFlow<NoteEntity?>(null)
+
     val note = _note.asStateFlow()
 
     init {
@@ -49,88 +54,132 @@ class ListViewModel @Inject constructor(
     }
 
     private fun loadNote() {
-        val id = folderId ?: return
+        val currentFolderId = folderId ?: return
 
         viewModelScope.launch {
+            val currentNote =
+                getNotesByFolderIdUseCase(currentFolderId)
 
-            val note = getNotesByFolderIdUseCase(folderId)
-            _note.value = note
+            _note.value = currentNote
 
-            note?.let {
+            currentNote?.let { note ->
 
-                val millis = it.selectedDate?.let { date ->
-                    SimpleDateFormat(
-                        "dd MMM yyyy",
-                        Locale.getDefault()
-                    ).parse(date)?.time
+                val selectedDateMillis =
+                    note.selectedDate?.let { date ->
+                        SimpleDateFormat(
+                            "dd MMM yyyy",
+                            Locale.getDefault()
+                        ).parse(date)?.time
+                    }
+
+                val alarm =
+                    getAlarmByNoteIdUseCase(note.id)
+
+                val timeParts =
+                    note.selectedTime?.split(":")
+
+                val selectedHour =
+                    timeParts
+                        ?.getOrNull(0)
+                        ?.toIntOrNull()
+
+                val selectedMinute =
+                    timeParts
+                        ?.getOrNull(1)
+                        ?.toIntOrNull()
+
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        title = note.title,
+                        content = note.content,
+                        selectedDateMillis = selectedDateMillis,
+                        selectedHour = selectedHour,
+                        selectedMinute = selectedMinute,
+                        selectedSongUri = alarm?.songUrl,
+                        selectedSongName = alarm?.songName,
+                        repeatType = alarm?.repeatType
+                            ?: RepeatType.NONE
+                    )
                 }
-
-                val alarm = getAlarmByNoteIdUseCase(it.id)
-
-                val timeParts = it.selectedTime?.split(":")
-
-                val hour = timeParts
-                    ?.getOrNull(0)
-                    ?.toIntOrNull()
-
-                val minute = timeParts
-                    ?.getOrNull(1)
-                    ?.toIntOrNull()
-
-                _uiState.value = _uiState.value.copy(
-                    title = it.title,
-                    content = it.content,
-                    selectedDateMillis = millis,
-                    selectedHour = hour,
-                    selectedMinute = minute,
-                    repeatType = alarm?.repeatType ?: RepeatType.NONE
-                )
             }
         }
     }
 
     fun onTitleChange(title: String) {
-        _uiState.value = _uiState.value.copy(title = title)
+        _uiState.update {
+            it.copy(title = title)
+        }
     }
 
     fun onContentChange(content: String) {
-        _uiState.value = _uiState.value.copy(content = content)
+        _uiState.update {
+            it.copy(content = content)
+        }
     }
 
     fun showDatePicker(show: Boolean) {
-        _uiState.value = _uiState.value.copy(showDatePicker = show)
+        _uiState.update {
+            it.copy(showDatePicker = show)
+        }
     }
 
     fun showTimePicker(show: Boolean) {
-        _uiState.value = _uiState.value.copy(showTimePicker = show)
+        _uiState.update {
+            it.copy(showTimePicker = show)
+        }
     }
 
     fun setDate(date: Long?) {
-        _uiState.value = _uiState.value.copy(
-            selectedDateMillis = date
-        )
+        _uiState.update {
+            it.copy(
+                selectedDateMillis = date
+            )
+        }
     }
 
-    fun setTime(hour: Int, minute: Int) {
-        _uiState.value = _uiState.value.copy(
-            selectedHour = hour,
-            selectedMinute = minute
-        )
+    fun setTime(
+        hour: Int,
+        minute: Int
+    ) {
+        _uiState.update {
+            it.copy(
+                selectedHour = hour,
+                selectedMinute = minute
+            )
+        }
     }
 
-    fun setSong(uri: String?) {
-        _uiState.value = _uiState.value.copy(
-            selectedSongUri = uri
-        )
+    fun setSong(
+        songName: String,
+        songUrl: String
+    ) {
+        _uiState.update {
+            it.copy(
+                selectedSongName = songName,
+                selectedSongUri = songUrl
+            )
+        }
     }
-    fun isEditMode(): Boolean = note.value != null
+
+    fun setRepeatType(
+        repeatType: RepeatType
+    ) {
+        _uiState.update {
+            it.copy(
+                repeatType = repeatType
+            )
+        }
+    }
+
+    private fun isEditMode(): Boolean {
+        return note.value != null
+    }
 
     fun saveNote(
         onSaved: () -> Unit,
         onError: () -> Unit
     ) {
         viewModelScope.launch {
-
             val state = uiState.value
 
             if (!state.canSave()) {
@@ -138,17 +187,21 @@ class ListViewModel @Inject constructor(
                 return@launch
             }
 
-            val (noteId, currentFolderId) = saveOrUpdateNote(state)
+            val (noteId, currentFolderId) =
+                saveOrUpdateNote(state)
 
             saveAlarmUseCase(
                 noteId = noteId,
                 folderId = currentFolderId,
                 title = state.title,
                 message = state.content,
-                selectedDateMillis = state.selectedDateMillis,
+                selectedDateMillis =
+                    state.selectedDateMillis,
                 hour = state.selectedHour,
                 minute = state.selectedMinute,
-                repeatType = state.repeatType
+                repeatType = state.repeatType,
+                songUrl = state.selectedSongUri,
+                songName = state.selectedSongName
             )
 
             onSaved()
@@ -159,14 +212,16 @@ class ListViewModel @Inject constructor(
         state: NoteUiState
     ): Pair<Int, Int> {
 
-        val selectedDate = state.selectedDateMillis.toFormattedDate()
-        val selectedTime = state.selectedHour.toFormattedTime(
-            state.selectedMinute
-        )
+        val selectedDate =
+            state.selectedDateMillis.toFormattedDate()
+
+        val selectedTime =
+            state.selectedHour.toFormattedTime(
+                state.selectedMinute
+            )
 
         return if (isEditMode()) {
-
-            val currentNote = note.value!!
+            val currentNote = checkNotNull(note.value)
 
             updateNoteUseCase(
                 currentNote.copy(
@@ -177,15 +232,17 @@ class ListViewModel @Inject constructor(
                 )
             )
 
-            Pair(currentNote.id, currentNote.folderId)
-
+            Pair(
+                currentNote.id,
+                currentNote.folderId
+            )
         } else {
-
-            val currentFolderId = folderId ?: insertFolderUseCase(
-                entityId = checkNotNull(entityId),
-                title = "",
-                description = ""
-            ).toInt()
+            val currentFolderId =
+                folderId ?: insertFolderUseCase(
+                    entityId = checkNotNull(entityId),
+                    title = "",
+                    description = ""
+                ).toInt()
 
             val noteId = insertNoteUseCase(
                 folderId = currentFolderId,
@@ -195,25 +252,20 @@ class ListViewModel @Inject constructor(
                 selectedTime = selectedTime
             ).toInt()
 
-            Pair(noteId, currentFolderId)
+            Pair(
+                noteId,
+                currentFolderId
+            )
         }
     }
 
     private fun NoteUiState.canSave(): Boolean {
-        return title.isNotBlank() ||
-                content.isNotBlank() ||
-                selectedDateMillis != null ||
-                selectedHour != null ||
-                selectedMinute != null ||
-                selectedSongUri != null ||
+        return title.isNotBlank() &&
+                content.isNotBlank() &&
+                selectedDateMillis != null &&
+                selectedHour != null &&
+                selectedMinute != null &&
+                selectedSongName != null &&
                 repeatType != RepeatType.NONE
-    }
-
-    fun setRepeatType(
-        repeatType: RepeatType
-    ) {
-        _uiState.value = _uiState.value.copy(
-            repeatType = repeatType
-        )
     }
 }

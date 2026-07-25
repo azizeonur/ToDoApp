@@ -8,6 +8,8 @@ import com.example.todoapp.data.folder.FolderRepository
 import com.example.todoapp.data.folder.FolderRepositoryImpl
 import com.example.todoapp.data.note.NoteRepository
 import com.example.todoapp.data.note.NoteRepositoryImpl
+import com.example.todoapp.data.remote.dto.SongRepositoryImpl
+import com.example.todoapp.domain.song.SongRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -41,4 +43,10 @@ abstract class RepositoryModule {
     abstract fun bindAlarmRepository(
         repositoryImpl: AlarmRepositoryImpl
     ): AlarmRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindSongRepository(
+        repositoryImpl: SongRepositoryImpl
+    ): SongRepository
 }

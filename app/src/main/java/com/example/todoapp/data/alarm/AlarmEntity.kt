@@ -24,5 +24,8 @@ data class AlarmEntity(
     val triggerTimeMillis: Long,
     val label: String = "",
     val isActive: Boolean = true,
-    val repeatType: RepeatType = RepeatType.NONE
+    val repeatType: RepeatType = RepeatType.NONE,
+    val songUrl: String? = null,
+    val songName : String? = null
+
 )

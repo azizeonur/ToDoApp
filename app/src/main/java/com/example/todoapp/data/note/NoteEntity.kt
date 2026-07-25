@@ -25,5 +25,6 @@ data class NoteEntity(
     val content: String,
     val selectedDate: String? = null,
     val selectedTime: String? = null,
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
+    val isCompleted: Boolean = false
 )
