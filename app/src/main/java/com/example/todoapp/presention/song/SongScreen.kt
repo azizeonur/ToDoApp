@@ -202,7 +202,7 @@ private fun handlePreviewClick(
 }
 
 @Composable
-private fun SongItem(
+fun SongItem(
     songName: String,
     artistName: String,
     imageUrl: String,
